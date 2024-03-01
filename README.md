@@ -1,4 +1,4 @@
-# SeaweedJS
+# SeaweedTS
 
 Client library for SeaweedFS, providing typing which did not previously exist. This
 depends on axios, which should be avalible in both the web and node.
