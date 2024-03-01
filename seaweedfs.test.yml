@@ -1,0 +1,95 @@
+version: "3.9"
+services:
+  seaweed:
+    image: seaweedts
+    hostname: seaweed
+    networks:
+      - all
+    container_name: seaweed
+    restart: always
+    command: ["./wait-for-it.sh", "locahost:8333", "--", "npm", "run", "test"]
+    volumes:
+      - ./src:/seaweed/src
+
+  master:
+    image: chrislusf/seaweedfs
+    hostname: master
+    container_name: master
+    networks:
+      - all
+    restart: always
+    ports:
+      - 9333:9333
+      - 19333:19333
+    command: "-v=1 master -volumeSizeLimitMB=8192 -resumeState=false -ip=master -port=9333 -peers=master:9333 -mdir=/data"
+
+  volume:
+    image: chrislusf/seaweedfs
+    restart: always
+    networks:
+      - all
+    hostname: volume
+    container_name: volume
+    ports:
+      - 8080:8080
+      - 18080:18080
+    command: 'volume -dataCenter=dc1 -max=1000 -rack=v1 -mserver="master:9333" -port=8080 -ip=volume -publicUrl=localhost:8080 -preStopSeconds=1'
+    depends_on:
+      - master
+    volumes:
+      - volume1:/data
+
+  filer:
+    image: chrislusf/seaweedfs
+    restart: always
+    hostname: filer
+    container_name: filer
+    networks:
+      - all
+    ports:
+      - 8888:8888
+      - 18888:18888
+      - 8111:8111
+    command: 'filer -defaultReplicaPlacement=000 -iam -master="master:9333"'
+    depends_on:
+      - master
+      - volume
+
+  s3:
+    image: chrislusf/seaweedfs
+    restart: always
+    hostname: s3
+    container_name: s3
+    networks:
+      - all
+    ports:
+      - 8333:8333
+    command: 's3 -filer="filer:8888" -ip.bind=0.0.0.0 -allowEmptyFolder=true -allowDeleteBucketNotEmpty=false'
+    depends_on:
+      - master
+      - volume
+      - filer
+
+  webdav:
+    image: chrislusf/seaweedfs
+    restart: always
+    hostname: webdav
+    container_name: webdav
+    networks:
+      - all
+    ports:
+      - 7333:7333
+    command: 'webdav -filer="filer:8888"'
+    depends_on:
+      - master
+      - volume
+      - filer
+
+networks:
+  all:
+    driver: bridge
+    attachable: true
+
+volumes:
+  volume1:
+    driver: local

@@ -1,0 +1,7 @@
+node_modules
+.vscode
+.nyc_output
+.env
+/dist
+/src/tests/*,*.jpg
+/src/tests/*,*.txt

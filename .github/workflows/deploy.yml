@@ -1,0 +1,27 @@
+name: Publish NPM Library
+on:
+  push: { branches: main }
+
+jobs:
+  publish:
+    name: Publish NPM library
+    runs-on: ubuntu-latest
+    env:
+      NPM_USER: ${{ secrets.NPM_USERNAME }}
+      NPM_PASS: ${{ secrets.NPM_PASSWORD }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Installs NPM CLI Login
+      run: npm install -g npm-cli-login
+
+    - name: Login to NPM
+      run:  npm-cli-login -u $NPM_USER -p $NPM_PASS
+
+    - name: Build the library
+      run: npm install && npm run build
+
+    - name: Publish the repository
+      run: npm run deploy
