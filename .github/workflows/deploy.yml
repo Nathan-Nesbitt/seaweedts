@@ -7,21 +7,14 @@ jobs:
     name: Publish NPM library
     runs-on: ubuntu-latest
     env:
-      NPM_USER: ${{ secrets.NPM_USERNAME }}
-      NPM_PASS: ${{ secrets.NPM_PASSWORD }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Installs NPM CLI Login
-      run: npm install -g npm-cli-login
-
-    - name: Login to NPM
-      run:  npm-cli-login -u $NPM_USER -p $NPM_PASS
-
     - name: Build the library
       run: npm install && npm run build
 
-    - name: Publish the repository
+    - name: Publish the library
       run: npm run deploy
