@@ -6,15 +6,21 @@ jobs:
   publish:
     name: Publish NPM library
     runs-on: ubuntu-latest
-    env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+    
+    - name: Create the .npmrc file for publishing
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        registry-url: 'https://registry.npmjs.org'
 
     - name: Build the library
       run: npm install && npm run build
 
     - name: Publish the library
       run: npm run deploy
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
