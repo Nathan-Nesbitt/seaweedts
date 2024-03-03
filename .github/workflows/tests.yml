@@ -10,8 +10,14 @@ jobs:
     - name: Checkout code 
       uses: actions/checkout@v2
     
-    - name: Build seaweed docker image
-      run: docker build . --tag seaweedts
+    - name: Build seaweed testing image with cache
+      uses: docker/build-push-action@v3
+      with:
+        context: .
+        push: false
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        tags: seaweedts
 
     - name: Start swarm
       run: docker swarm init
