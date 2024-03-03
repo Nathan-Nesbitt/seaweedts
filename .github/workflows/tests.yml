@@ -1,4 +1,4 @@
-name: Test and Publish NPM library
+name: Test suite
 on:
   push:
 jobs:
