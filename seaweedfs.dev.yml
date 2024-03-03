@@ -7,7 +7,11 @@ services:
       - all
     container_name: seaweedts
     restart: always
-    command: ["./wait-for-it.sh", "locahost:8333", "-t", "30", "--", "./wait-for-it.sh", "locahost:8080", "-t", "30", "--", "npm", "run", "coverage"]
+    command: [
+      "./wait-for-it.sh", "s3:8333", "-t", "30", "--", 
+      "./wait-for-it.sh", "volume:8080", "-t", "30", "--", 
+      "npm", "run", "coverage"
+    ]
     volumes:
       - ./src:/seaweed/src
 
