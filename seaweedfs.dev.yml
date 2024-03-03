@@ -5,7 +5,7 @@ services:
     hostname: seaweed
     networks:
       - all
-    container_name: seaweed
+    container_name: seaweedts
     restart: always
     command: ["./wait-for-it.sh", "locahost:8333", "-t", "5", "--", "npm", "run", "coverage"]
     volumes:
