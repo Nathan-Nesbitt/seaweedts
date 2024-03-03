@@ -1,11 +1,6 @@
 # SeaweedTS
 
-Client library for SeaweedFS, providing typing which did not previously exist. This
-depends on axios, which should be avalible in both the web and node.
-
-I wrote this because it was hard to check if things were working. If you want to
-check to see if your stack is accessible, you can just run the test suite and check
-to see if anything errors out. 
+Client library for SeaweedFS, providing typing which did not previously exist.
 
 **This library requires Node version >18 as it uses fetch**
 
@@ -25,8 +20,8 @@ follows:
 import { SeaweedClient } from "seaweedts"; 
 
 const seaweed = new SeaweedClient({
-	host: "localhost",
-	port: 9333
+  host: "localhost",
+  port: 9333
 });
 ```
 
@@ -38,7 +33,7 @@ import { SeaweedClient } from "seaweedts";
 
 const seaweed = new SeaweedClient();
 seaweed.assign().then(response => {
-	// Your code in here
+  // Your code in here
 })
 ```
 
@@ -50,7 +45,7 @@ import { SeaweedClient } from "seaweedts";
 const seaweed = new SeaweedClient();
 // No replication = 000
 seaweed.assign({ replication: "000" }).then(response => {
-	// Your code in here
+  // Your code in here
 })
 ```
 
@@ -62,14 +57,14 @@ import { SeaweedClient } from "seaweedts";
 
 const seaweed = new SeaweedClient();
 seaweed.assign().then(response => {
-	const file = new Buffer.from("1234");
-	const fileName = "file.txt";
-	seaweed.write({
-		file: file, // What you are writing
-		filename: fileName, // New name of the object
-		fid: response.fid, // The server defined file ID (volume/id)
-		volumeURL: response.url // Where we are going to send the file (defined from the master node)
-	});
+  const file = new Buffer.from("1234");
+  const fileName = "file.txt";
+  seaweed.write({
+    file: file, // What you are writing
+    filename: fileName, // New name of the object
+    fid: response.fid, // The server defined file ID (volume/id)
+    volumeURL: response.url // Where we are going to send the file (defined from the master node)
+  });
 })
 ```
 
@@ -81,14 +76,14 @@ import { SeaweedClient } from "seaweedts";
 
 const seaweed = new SeaweedClient();
 seaweed.assign().then(response => {
-	const file = fs.readFileSync("<LINK TO YOUR FILE>");
-	const fileName = "file.txt";
-	seaweed.write({
-		file: file, // Buffer of What you are writing
-		filename: fileName, // New name of the object
-		fid: response.fid, // The server defined file ID (volume/id)
-		volumeURL: response.url // Where we are going to send the file (defined from the master node)
-	});
+  const file = fs.readFileSync("<LINK TO YOUR FILE>");
+  const fileName = "file.txt";
+  seaweed.write({
+    file: file, // Buffer of What you are writing
+    filename: fileName, // New name of the object
+    fid: response.fid, // The server defined file ID (volume/id)
+    volumeURL: response.url // Where we are going to send the file (defined from the master node)
+  });
 })
 ```
 
@@ -102,7 +97,7 @@ import { SeaweedClient } from "seaweedts";
 var fid;
 
 client.get({fid: fid}).then(async (file) => {
-	fs.writeFileSync(`<NEW_FILE>`, new Uint8Array(await file.arrayBuffer()));
+  fs.writeFileSync(`<NEW_FILE>`, new Uint8Array(await file.arrayBuffer()));
 }).catch(err => done(err));
 ```
 
@@ -120,7 +115,7 @@ const seaweed = new SeaweedClient();
 
 var writeStream = fs.createWriteStream(`<NEW_FILE>`);
 for await (const chunk of client.getStream({fid: fid})) {
-	writeStream.write(chunk);
+  writeStream.write(chunk);
 }
 writeStream.close();
 ```
