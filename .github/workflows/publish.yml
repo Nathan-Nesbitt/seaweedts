@@ -1,8 +1,33 @@
 name: Publish NPM Library
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - 'v*.*.*'
+    branches:
+      - main
+
 jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build the library
+      run: npm install && npm run build
+
+    - name: Create release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        tag: $GITHUB_REF_NAME
+      run: |
+        gh release create "$tag" \
+          --repo="$GITHUB_REPOSITORY" \
+          --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
+          --generate-notes
+          
   publish:
     name: Publish NPM library
     runs-on: ubuntu-latest
