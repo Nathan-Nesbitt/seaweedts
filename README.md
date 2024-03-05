@@ -177,4 +177,5 @@ git add .
 git commit
 git tag v1.0.1
 git push
+git push origin --tags
 ```
