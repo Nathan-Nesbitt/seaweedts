@@ -176,5 +176,6 @@ and we want to increment the `C` value by 1 and push to origin:
 git add .
 git commit
 git tag v1.0.1
-git push origin v1.0.1
+git push
+git push origin --tags
 ```
