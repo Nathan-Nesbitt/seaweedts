@@ -173,6 +173,7 @@ following as we are not breaking any changes. We can create a new PR
 and we want to increment the `C` value by 1 and push to origin:
 
 ```sh
+git add .
 git commit
 git tag v1.0.1
 git push
