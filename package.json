@@ -12,6 +12,7 @@
   },
   "author": "Nathan Nesbitt",
   "repository": {
+    "type": "git",
     "url" : "git://github.com/Nathan-Nesbitt/seaweedts"
   },
   "license": "ISC",
