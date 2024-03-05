@@ -157,21 +157,10 @@ The version follows the syntax of vA.B.C where:
 - `B` - Minor release. New features. No breaking changes from previous version.
 - `C` - Minor release. Bug fix. No breaking changes from previous version.
 
-To introduce the tags into the push, as a standard push will not include the tags, you
-need to run
-
-```sh
-git push origin --tags
-```
-
-Or if you just want to do it all in one command, you can do:
-
-```sh
-git push origin VERSION
-```
+You can then just push the version change to master.
 
 We can just make changes until a specified date, e.g. each month, then do the change in
-a single PR where we increment and publish. This way `master` stays up to date, and we can
+a single commit where we increment and publish. This way `master` stays up to date, and we can
 just deploy the known functional changes to NPM.
 
 ## Example
