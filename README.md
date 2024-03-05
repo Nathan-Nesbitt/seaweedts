@@ -145,7 +145,7 @@ connect to the master node on localhost:8333
 Since all the deployment is automated, you just need to tag your branch, and make sure
 that the `package.json` is the same (current + 1).
 
-To tag the branch, you can simply do 
+We then commit the change. To tag the branch, you can simply do 
 
 ```sh
 git tag VERSION
@@ -173,5 +173,7 @@ following as we are not breaking any changes. We can create a new PR
 and we want to increment the `C` value by 1 and push to origin:
 
 ```sh
-git push origin v1.0.1
+git commit
+git tag v1.0.1
+git push
 ```
