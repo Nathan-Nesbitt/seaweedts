@@ -11,7 +11,9 @@
     "deploy": "cp package.json ./dist && cp README.md ./dist && cd ./dist && npm publish"
   },
   "author": "Nathan Nesbitt",
-  "repository": "git://github.com/Nathan-Nesbitt/seaweedts",
+  "repository": {
+    "url" : "git://github.com/Nathan-Nesbitt/seaweedts"
+  },
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.490.0",
