@@ -41,10 +41,17 @@ jobs:
         node-version: '20.x'
         registry-url: 'https://registry.npmjs.org'
 
-    - name: Build the library
-      run: npm install && npm run build
+    - name: Install requirements
+      run: npm install
+
+    - name: Build Library
+      run: npm run build
+
+    - name: Move README and package file to build directory
+      run: cp package.json ./dist && cp README.md ./dist
 
     - name: Publish the library
-      run: npm run deploy
-      env:
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      uses: JS-DevTools/npm-publish@v3
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        package: "./dist"
