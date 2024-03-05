@@ -2,7 +2,7 @@ name: Publish NPM Library
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - v*
     branches:
       - main
 
