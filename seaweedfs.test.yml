@@ -1,13 +1,17 @@
 version: "3.9"
 services:
-  seaweed:
+  seaweedts:
     image: seaweedts
     hostname: seaweed
     networks:
       - all
-    container_name: seaweed
-    restart: always
-    command: ["./wait-for-it.sh", "locahost:8333", "--", "npm", "run", "test"]
+    container_name: seaweedts
+    restart: "no"
+    command: [
+      "./wait-for-it.sh", "s3:8333", "-t", "30", "--", 
+      "./wait-for-it.sh", "volume:8080", "-t", "30", "--", 
+      "npm", "run", "test"
+    ]
     volumes:
       - ./src:/seaweed/src
 
@@ -21,6 +25,8 @@ services:
     ports:
       - 9333:9333
       - 19333:19333
+    logging:
+      driver: none
     command: "-v=1 master -volumeSizeLimitMB=8192 -resumeState=false -ip=master -port=9333 -peers=master:9333 -mdir=/data"
 
   volume:
@@ -36,6 +42,8 @@ services:
     command: 'volume -dataCenter=dc1 -max=1000 -rack=v1 -mserver="master:9333" -port=8080 -ip=volume -publicUrl=localhost:8080 -preStopSeconds=1'
     depends_on:
       - master
+    logging:
+      driver: none
     volumes:
       - volume1:/data
 
@@ -51,6 +59,8 @@ services:
       - 18888:18888
       - 8111:8111
     command: 'filer -defaultReplicaPlacement=000 -iam -master="master:9333"'
+    logging:
+      driver: none
     depends_on:
       - master
       - volume
@@ -65,6 +75,8 @@ services:
     ports:
       - 8333:8333
     command: 's3 -filer="filer:8888" -ip.bind=0.0.0.0 -allowEmptyFolder=true -allowDeleteBucketNotEmpty=false'
+    logging:
+      driver: none
     depends_on:
       - master
       - volume
@@ -80,6 +92,8 @@ services:
     ports:
       - 7333:7333
     command: 'webdav -filer="filer:8888"'
+    logging:
+      driver: none
     depends_on:
       - master
       - volume

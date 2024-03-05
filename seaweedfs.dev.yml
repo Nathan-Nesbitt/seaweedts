@@ -1,13 +1,17 @@
 version: "3.9"
 services:
-  seaweed:
+  seaweedts:
     image: seaweedts
     hostname: seaweed
     networks:
       - all
-    container_name: seaweed
+    container_name: seaweedts
     restart: always
-    command: ["./wait-for-it.sh", "locahost:8333", "-t", "5", "--", "npm", "run", "coverage"]
+    command: [
+      "./wait-for-it.sh", "s3:8333", "-t", "30", "--", 
+      "./wait-for-it.sh", "volume:8080", "-t", "30", "--", 
+      "npm", "run", "coverage"
+    ]
     volumes:
       - ./src:/seaweed/src
 

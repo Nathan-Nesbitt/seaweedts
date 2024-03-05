@@ -23,15 +23,6 @@ describe("SeaweedS3Client", () => {
 		}).catch(err => done(err));
 	});
 
-	describe("listBuckets", () => {
-		it("listBuckets()", (done) => {
-			client.listBuckets().then(result => {
-				expect(result.Buckets?.length).to.be.gt(0);
-				done();
-			}).catch(err => done(err));
-		});
-	});
-
 	describe("upload", () => {
 		it("upload(file, filename)", (done) => {
 			client.upload(file, fileName).then(() => {

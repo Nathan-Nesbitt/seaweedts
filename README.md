@@ -137,3 +137,52 @@ It loads up all of the requirements, which is essentially:
 
 Then it runs the test suite with a sleep method every 15 seconds if it can't 
 connect to the master node on localhost:8333
+
+# Creating a new version
+
+## Overview 
+
+Since all the deployment is automated, you just need to tag your branch, and make sure
+that the `package.json` is the same (current + 1).
+
+To tag the branch, you can simply do 
+
+```sh
+git tag VERSION
+```
+
+The version follows the syntax of vA.B.C where:
+
+- `A` - Major release. New features. Introduces breaking changes from previous version.
+- `B` - Minor release. New features. No breaking changes from previous version.
+- `C` - Minor release. Bug fix. No breaking changes from previous version.
+
+To introduce the tags into the push, as a standard push will not include the tags, you
+need to run
+
+```sh
+git push origin --tags
+```
+
+Or if you just want to do it all in one command, you can do:
+
+```sh
+git push origin VERSION
+```
+
+We can just make changes until a specified date, e.g. each month, then do the change in
+a single PR where we increment and publish. This way `master` stays up to date, and we can
+just deploy the known functional changes to NPM.
+
+## Example
+
+If you are dealing with version `1.0.0` of the library, and you introduce a small bug
+fix or documentation change that should be pushed to the NPM library, you can run the
+following as we are not breaking any changes. We can create a new PR
+
+
+and we want to increment the `C` value by 1 and push to origin:
+
+```sh
+git push origin v1.0.1
+```
