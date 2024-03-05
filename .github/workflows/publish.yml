@@ -15,17 +15,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Build the library
-      run: npm install && npm run build
+    - name: Install requirements
+      run: npm install
 
-    - name: Create release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        gh release create "$GITHUB_REF_NAME" \
-          --repo="$GITHUB_REPOSITORY" \
-          --title="${GITHUB_REPOSITORY#*/} ${$GITHUB_REF_NAME#v}" \
-          --generate-notes
+    - name: Build Library
+      run: npm run build
+
+    - name: Move README and package file to build directory
+      run: cp package.json ./dist && cp README.md ./dist
+
+    - name: Zip NPM code so it can be downloaded
+      run: zip -r seaweedts ./dist/
+
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "seaweedts.zip"
           
   publish:
     name: Publish NPM library
