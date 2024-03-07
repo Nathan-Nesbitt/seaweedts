@@ -13,9 +13,9 @@
   "author": "Nathan Nesbitt",
   "repository": {
     "type": "git",
-    "url" : "git://github.com/Nathan-Nesbitt/seaweedts.git"
+    "url": "git://github.com/Nathan-Nesbitt/seaweedts.git"
   },
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.490.0",
     "node-fetch": "^3.3.2"
