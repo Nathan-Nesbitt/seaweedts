@@ -1,6 +1,8 @@
-name: Publish NPM Library
+name: CI Pipeline
 on:
   push:
+    branches:
+      - "main"
     tags:
       - 'v*.*.*'
 

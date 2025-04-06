@@ -17,4 +17,4 @@ jobs:
       run: docker swarm init
 
     - name: Run tests
-      run: docker-compose -f seaweedfs.test.yml up --abort-on-container-exit --exit-code-from seaweedts
+      run: docker compose -f seaweedfs.test.yml up --abort-on-container-exit --exit-code-from seaweedts
