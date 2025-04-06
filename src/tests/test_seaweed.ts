@@ -205,13 +205,10 @@ describe("SeaweedClient", () => {
 			}).catch(err => done(err));
 		});
 
-		it("Download image as blob", (done) => {
-			client.get({fid: imgFID}).then((img) => {
-				img.arrayBuffer().then(buffer => {
-					expect(Buffer.from(buffer).equals(image)).to.be.true;
-					done();
-				});
-			}).catch(err => done(err));
+		it("Download image as blob", async () => {
+			const img = await client.get({fid: imgFID});
+			const buffer = await img.arrayBuffer();
+			expect(Buffer.from(buffer).equals(image)).to.be.true;
 		});
 
 		it("Download text as stream", async () => {
@@ -244,11 +241,9 @@ describe("SeaweedClient", () => {
 	});
 
 	describe("vaccum", () => {
-		it("vaccum()", (done) => {
-			client.vaccum(0.4).then(result => {
-				expect(result).to.not.be.null;
-				done();
-			}).catch(err => done(err));
+		it("vaccum()", async () => {
+			const result = client.vaccum(0.4);
+			expect(result).to.not.be.null;
 		});
 	});
 

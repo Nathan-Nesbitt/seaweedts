@@ -153,6 +153,11 @@ export namespace Filer {
 			]
 		}
 
+		export interface PathContents {
+			files: FileMetadata[]
+			directories: DirectoryMetadata[]
+		}
+
 		export interface Tags {
 			[key: string]: string
 		}
@@ -205,31 +210,32 @@ export class SeaweedFilerServer {
 	}
 
 	/**
-		 * Removes all null parameters, only grabs the ones that have some set value as
-		 * all methods are either default "" or false.
-		 * @param parameters Parameter list provided
-		 * @returns URL encoded parameter list as a string
-		 */
-	private parseParameters(parameters: Filer.Parameters.SeaweedFilerParameters) {
+	 * Removes all null parameters, only grabs the ones that have some set value as
+	 * all methods are either default "" or false.
+	 * @param parameters Parameter list provided
+	 * @returns URL encoded parameter list as a string
+	 */
+	private parseParameters(parameters ?: Filer.Parameters.SeaweedFilerParameters) {
+		if (!parameters) return ""
 		return Object.entries(parameters).filter(([, val]) => {
 			return (val && val != "");
 		}).map(([key, val]) => {
-			return `${key}${encodeURIComponent(val)}`;
+			return `${key}=${encodeURIComponent(val)}`;
 		}).join("&");
 	}
 
 	/**
-		 * Send provides an interface for uploading a file via POST. The default functionality provided by the
-		 * API is to upload a file, but you can customize what happens using the `parameters`. For example,
-		 * if you set the parameter `op` to be `append`, it will append the body to the end of the file.
-		 * 
-		 * e.g. `send(file, { op: "append"});` ==> Appends to the file
-		 * 
-		 * @param createFile Required file parameters in question
-		 * @param parameters Optional URL parameters for additional behaviour
-		 * @returns Response from creating an object
-		 */
-	public send(createFile: Filer.Parameters.CreateFile, parameters?: Filer.Parameters.Post): Promise<Filer.Response.Create> {
+	 * Send provides an interface for uploading a file via POST. The default functionality provided by the
+	 * API is to upload a file, but you can customize what happens using the `parameters`. For example,
+	 * if you set the parameter `op` to be `append`, it will append the body to the end of the file.
+	 * 
+	 * e.g. `send(file, { op: "append"});` ==> Appends to the file
+	 * 
+	 * @param createFile Required file parameters in question
+	 * @param parameters Optional URL parameters for additional behaviour
+	 * @returns Response from creating an object
+	 */
+	public send(createFile: Filer.Parameters.CreateFile, parameters ?: Filer.Parameters.Post): Promise<Filer.Response.Create> {
 		return new Promise((resolve, reject) => {
 			const form = new FormData();
 			form.append("file", new Blob([createFile.file]), createFile.filename);
@@ -242,10 +248,10 @@ export class SeaweedFilerServer {
 	}
 
 	/**
-		 * Alternative method for `send` using PUT instead of POST. Normally just use `send` as there
-		 * doesn't appear to be a difference between the two approaches.
-		 */
-	public put(createFile: Filer.Parameters.CreateFile, parameters?: Filer.Parameters.Post): Promise<Filer.Response.Create> {
+	 * Alternative method for `send` using PUT instead of POST. Normally just use `send` as there
+	 * doesn't appear to be a difference between the two approaches.
+	 */
+	public put(createFile: Filer.Parameters.CreateFile, parameters ?: Filer.Parameters.Post): Promise<Filer.Response.Create> {
 		return new Promise((resolve, reject) => {
 			const form = new FormData();
 			form.append("file", new Blob([createFile.file]), createFile.filename);
@@ -258,56 +264,78 @@ export class SeaweedFilerServer {
 	}
 
 	/**
-		 * Pagination function that queries large directory files so that the user gets all the files.
-		 * See the wiki for more information.
-		 */
-	private async * listAllFiles(url: string, parameters: Filer.Parameters.List) {
+	 * Pagination function that queries large directory files so that the user gets all the files.
+	 * See the wiki for more information.
+	 */
+	private async * listAllFiles(url: string, parameters ?: Filer.Parameters.List) {
 		const fullURL = `${url}?${this.parseParameters(parameters)}`;
-		const limit = parameters.limit ? parameters.limit : 100;
+		const limit = parameters && parameters.limit ? parameters.limit : 100;
 		let data: Filer.Response.ListFiles;
 
 		do {
-			const response = await fetch(fullURL);
+			const response = await fetch(fullURL, {headers: {"Accept": "application/json"}});
 			data = await response.json();
-			yield data.Entries;
+			yield data?.Entries;
 		}
 		while(data.Entries.length > limit);
 	}
 
 	/**
-		 * Lists all files in a directory on the server. Includes subdirectories.
-		 * 
-		 * Uses pagination to get all of the files using O(log(n)) time.
-		 * 
-		 * @param path path that you want the information from
-		 * @param pretty optional parameters
-		 * @returns array of files/objects
-		 */
-	public async listFiles(path: string, parameters: Filer.Parameters.List): Promise<(Filer.Types.FileMetadata | Filer.Types.DirectoryMetadata)[]> {
-		const listFileResponse: (Filer.Types.FileMetadata | Filer.Types.DirectoryMetadata)[] = [];
+	 * Lists all files in a directory on the server.
+	 * 
+	 * Uses pagination to get all of the files and folders using O(log(n)) time.
+	 * 
+	 * @param path path that you want the information from
+	 * @param pretty optional parameters
+	 * @returns array of files/objects
+	 */
+	public async list(path: string, parameters ?: Filer.Parameters.List): Promise<(Filer.Types.PathContents)> {
+		const listFileResponse: Filer.Types.PathContents = { files: [], directories: [] };
 		for await (const objects of this.listAllFiles(`${this.filerServerURL}/${path}`, parameters)) {
-			listFileResponse.push(...(objects ?? []));
+			// Seems the way to differentiate between files and directories is via the chunks
+			objects.forEach(object => {
+				if(object["chunks"]) listFileResponse.files.push(object as Filer.Types.FileMetadata)
+				else listFileResponse.directories.push(object as Filer.Types.DirectoryMetadata)
+			})
 		}
 		return listFileResponse;
 	}
 
 	/**
-		 * Gets the metadata for a file or folder
-		 * 
-		 * @param path path that you want the information from, file or folder.
-		 * @param pretty optional parameter if you want to prettify the response
-		 * @returns reponse metadata object (file or directory depending on what you are looking for)
-		 */
-	public getMetadata(path: string): Promise<Filer.Types.FileMetadata | Filer.Types.DirectoryMetadata> {
+	 * Gets the metadata for a folder
+	 * 
+	 * @param path path that you want the information from, file or folder.
+	 * @param pretty optional parameter if you want to prettify the response
+	 * @returns reponse metadata object (file or directory depending on what you are looking for)
+	 */
+	public getDirectoryMetadata(path: string): Promise<Filer.Types.DirectoryMetadata> {
 		return new Promise((resolve, reject) => {
 			const parameters = { metadata: true };
 			const fullURL = `${this.filerServerURL}/${path}?${this.parseParameters(parameters)}`;
 				
-			fetch(fullURL).then(response => {
+			fetch(fullURL, {headers: {"Accept": "application/json"}}).then(response => {
 				response.json().then(json => {
-					if (!json) resolve(json as Filer.Types.FileMetadata);
-					else if(json["chunks"]) resolve(json as Filer.Types.FileMetadata);
-					else resolve(json as Filer.Types.DirectoryMetadata);
+					return resolve(json as Filer.Types.DirectoryMetadata)
+				});
+			}).catch(err => { return reject(err); });
+		});
+	}
+
+	/**
+	 * Gets the metadata for a file
+	 * 
+	 * @param path path that you want the information from, file or folder.
+	 * @param pretty optional parameter if you want to prettify the response
+	 * @returns reponse metadata object (file or directory depending on what you are looking for)
+	 */
+	public getFileMetadata(path: string): Promise<Filer.Types.FileMetadata> {
+		return new Promise((resolve, reject) => {
+			const parameters = { metadata: true };
+			const fullURL = `${this.filerServerURL}/${path}?${this.parseParameters(parameters)}`;
+				
+			fetch(fullURL, {headers: {"Accept": "application/json"}}).then(response => {
+				response.json().then(json => {
+					return resolve(json as Filer.Types.FileMetadata);
 				});
 			}).catch(err => { return reject(err); });
 		});
@@ -339,13 +367,13 @@ export class SeaweedFilerServer {
 		 * @returns Axios request
 		 */
 	public move(path: string, newPath: string) {
-		const fullURL = `${this.filerServerURL}/${newPath}?mv.from=${encodeURIComponent(path)}`;
+		const fullURL = `${this.filerServerURL}/${newPath}?mv.from=/${path}`;
 		return fetch(fullURL, {method: "POST"});
 	}
 
 	/**
-		 * Removes all tags if none specified, or a subset of tags if tags are provided
-		 */
+	 * Removes all tags if none specified, or a subset of tags if tags are provided
+	 */
 	public removeTags(path: string): Promise<JSON>;
 	public removeTags(path: string, tagNames: string[]): Promise<JSON>;
 	public removeTags(path: string, tagNames ?: string[]): Promise<JSON> {
@@ -354,7 +382,7 @@ export class SeaweedFilerServer {
 			if(invalidTags.length) return reject(new Filer.Errors.SeaweedInvalidTag(invalidTags));
 
 			const fullURL = `${this.filerServerURL}/${path}?tagging`;
-			fetch(`${fullURL}=${tagNames.map(tagName => {return encodeURIComponent(tagName);}).toString()}`, {method: "DELETE"}).then(response => {
+			fetch(`${fullURL}=${tagNames.map(tagName => {return encodeURIComponent(tagName);}).toString()}`, {method: "DELETE", headers: {"Accept": "application/json"}}).then(response => {
 				response.json().then(json => {
 					resolve(json);
 				}).catch(err => reject(err));
@@ -363,34 +391,36 @@ export class SeaweedFilerServer {
 	}
 
 	/**
-		 * Gets a file from the server
-		 * @param path 
-		 * @param responseContentDisposition
-		 * @returns 
-		 */
-	public getFile(path: string): Promise<JSON>;
-	public getFile(path: string, attachment: boolean): Promise<JSON>;
-	public getFile(path: string, attachment: boolean = false): Promise<JSON> {
+	 * Gets a file from the server
+	 * @param path Path to the file.
+	 * @param responseContentDisposition marks if the file should be marked for download, or display.
+	 * @returns Blob of the object
+	 */
+	public getFile(path: string): Promise<Blob>;
+	public getFile(path: string, attachment: boolean): Promise<Blob>;
+	public getFile(path: string, attachment: boolean = false): Promise<Blob> {
 		return new Promise((resolve, reject) => {
 			const parameters: Filer.Parameters.Get = attachment ? {"response-content-disposition": "attachment"} : {};
-			const fullURL = `${this.filerServerURL}/${this.parseParameters(parameters)}`;
-				
+			const fullURL = `${this.filerServerURL}/${path}?${this.parseParameters(parameters)}`;
+
 			fetch(fullURL).then(response => {
-				response.json().then(json => {
-					resolve(json);
-				});
+				response.blob().then(blob => resolve(blob))
 			}).catch(err => reject(err));
 		});
 	}
 
-	public deleteFile(path: string, parameters: Filer.Parameters.Delete): Promise<JSON> {
+	/**
+	 * Deletes a file or path. 
+	 * @param path Path to either file or directory.
+	 * @param parameters Delete parameters
+	 * @returns Response object, no body is provided.
+	 */
+	public delete(path: string, parameters ?: Filer.Parameters.Delete): Promise<Response> {
 		return new Promise((resolve, reject) => {
-			const fullURL = `${this.filerServerURL}/${path}?${this.parseParameters(parameters)}`;	
-			fetch(fullURL, {method: "DELETE"}).then(response => {
-				response.json().then(json => {
-					resolve(json);
-				}).catch(err => reject(err));
-			});
+			const fullURL = `${this.filerServerURL}/${path}?${this.parseParameters(parameters)}`;
+			fetch(fullURL, {method: "DELETE", headers: {"Accept": "application/json"}}).then(response => {
+				resolve(response);
+			}).catch(err => reject(err));
 		});
 	}
 

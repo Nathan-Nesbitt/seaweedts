@@ -1,6 +1,6 @@
 {
   "name": "seaweedts",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Seaweedfs client library in typescript",
   "main": "seaweed.js",
   "types": "seaweed.d.ts",

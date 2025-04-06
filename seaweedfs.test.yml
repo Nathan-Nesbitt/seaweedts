@@ -1,8 +1,10 @@
-version: "3.9"
 services:
   seaweedts:
     image: seaweedts
     hostname: seaweed
+    build:
+      context: .
+      dockerfile: Dockerfile
     networks:
       - all
     container_name: seaweedts

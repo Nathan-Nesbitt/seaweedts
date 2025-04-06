@@ -122,7 +122,7 @@ writeStream.close();
 
 ## Testing
 
-You can build the image by running `docker build . --tag seaweedts`
+You can build the image by running `docker compose -f seaweedfs.dev.yml build`
 
 You can run `docker-compose -f seaweedfs.dev.yml up -d` if you want to run the retry
 test framework.
